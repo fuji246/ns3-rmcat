@@ -40,6 +40,9 @@
 #include "ns3/stats-module.h"
 #include "ns3/wifi-module.h"
 #include "ns3/traffic-control-helper.h"
+#include "ns3/lte-helper.h"
+#include "ns3/epc-helper.h"
+#include "ns3/lte-module.h"
 
 #include "ns3/rmcat-constants.h"
 

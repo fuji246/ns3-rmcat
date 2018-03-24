@@ -18,7 +18,7 @@
 ###############################################################################
 
 def build(bld):
-    module = bld.create_ns3_module('ns3-rmcat', ['wifi', 'point-to-point', 'applications', 'internet-apps'])
+    module = bld.create_ns3_module('ns3-rmcat', ['wifi', 'lte', 'point-to-point', 'applications', 'internet-apps'])
     module.source = [
         'model/apps/rmcat-sender.cc',
         'model/apps/rmcat-receiver.cc',
@@ -31,6 +31,7 @@ def build(bld):
         'model/topo/topo.cc',
         'model/topo/wired-topo.cc',
         'model/topo/wifi-topo.cc',
+        'model/topo/lte-topo.cc',
         ]
 
     module.defines = ['NS3_ASSERT_ENABLE', 'NS3_LOG_ENABLE']
@@ -45,6 +46,8 @@ def build(bld):
         'test/rmcat-wired-varyparam-test-suite.cc',
         'test/rmcat-wifi-test-case.cc',
         'test/rmcat-wifi-test-suite.cc',
+        'test/rmcat-lte-test-case.cc',
+        'test/rmcat-lte-test-suite.cc',
         ]
 
     headers = bld(features='ns3header')
@@ -62,6 +65,7 @@ def build(bld):
         'model/topo/topo.h',
         'model/topo/wired-topo.h',
         'model/topo/wifi-topo.h',
+        'model/topo/lte-topo.h',
        ]
 
     if bld.env.ENABLE_EXAMPLES:

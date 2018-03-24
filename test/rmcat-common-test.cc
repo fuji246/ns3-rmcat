@@ -56,6 +56,7 @@ void RmcatTestCase::DoSetup ()
                             LOG_PREFIX_TIME |
                             LOG_PREFIX_NODE);
     LogComponentEnable ("Topo", l);
+    LogComponentEnable ("LteTopo", l);
 
     if (m_debug) {
         LogComponentEnable ("OnOffApplication", l);
