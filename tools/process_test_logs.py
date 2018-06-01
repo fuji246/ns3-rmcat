@@ -71,6 +71,17 @@ def process_controller_log(line, test_logs):
                                        rrate, srate, loglen, avgint, curint])
         return
 
+def process_mobility_log(line, test_logs):
+    match_moving = re.search(r'(\d+(?:\.\d*)?|\.\d+)s \d+ /NodeList/(\d+)/\$ns3::MobilityModel/CourseChange, model=[0-9xXa-fA-F]+,'
+                             r' POS: x=(\d+(?:\.\d*)?|\.\d+), y=(\d+(?:\.\d*)?|\.\d+), z=0; VEL: x=0, y=0, z=0', line)
+    if match_moving:
+        timestamp = float(match_moving.group(1)) # to seconds
+        nodeid = int(match_moving.group(2))
+        pos_x = float(match_moving.group(3))
+        pos_y = float(match_moving.group(4))
+        pos_lst = test_logs['pos'].setdefault(nodeid, [])
+        pos_lst.append([timestamp, pos_x, pos_y])
+        return
 
 def process_tcp_log(line, test_logs):
     #tcp_0 ts: 165000 recv: 16143000 rrate: 1160000.0000
@@ -99,7 +110,7 @@ def process_log(dirname, filename, all_logs):
     print "Processing file {}...".format(filename)
     test_name = match.group(1).replace(".", "_").replace("-", "_")
 
-    test_logs = {'nada': {}, 'tcp': {} }
+    test_logs = {'nada': {}, 'tcp': {}, 'pos': {}}
     all_logs[test_name] = test_logs
 
     with open(abs_fn) as f_log:
@@ -111,6 +122,10 @@ def process_log(dirname, filename, all_logs):
             match = re.search(r'tcp_log:', line)
             if match:
                 process_tcp_log(line, test_logs)
+                continue
+            match = re.search(r'MobilityModel', line)
+            if match:
+                process_mobility_log(line, test_logs)
                 continue
             #Unrecognized ns3 log line , ignore
 

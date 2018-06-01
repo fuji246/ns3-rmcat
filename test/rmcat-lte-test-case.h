@@ -95,6 +95,9 @@ public:
     void SetUpCBR (std::vector<Ptr<Application> >& cbrSend,
                    bool downstream, size_t numFlows, uint32_t rCBR);
 
+    void SetUpTCP (std::vector<Ptr<BulkSendApplication> >& tcpSend,
+                   bool downstream, size_t numFlows);
+
 protected:
     /* network toplogy configuration */
     LteTop m_topo;

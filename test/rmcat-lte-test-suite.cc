@@ -82,10 +82,20 @@ RmcatLteTestSuite :: RmcatLteTestSuite ()
     : TestSuite{"rmcat-lte", UNIT}
 {
     // delay, velocity, numberOfUEs, downstream, intensity
-    for (uint32_t i = 1; i <= 16; i *= 2) {
-        AddLteTestCase(40, 3, i, true, 0.7);
-        AddLteTestCase(40, 3, i, false, 0.7);
-    }
+    //for (uint32_t i = 1; i <= 1; i *= 2) {
+    //    AddLteTestCase(40, 3, i, true, 0.7);
+        //AddLteTestCase(40, 3, i, false, 0.7);
+    //}
+
+    AddLteTestCase(40, 100, 1, true, 0.7);
+    //AddLteTestCase(40, 3, 1, false, 0.7);
+
+    //AddLteTestCase(40, 3, 2, true, 0.7);
+    //AddLteTestCase(40, 3, 2, false, 0.7);
+
+    //AddLteTestCase(40, 3, 4, false, 0.7);
+    //AddLteTestCase(40, 3, 8, false, 0.7);
+    //AddLteTestCase(40, 3, 16, false, 0.7);
 }
 
 static RmcatLteTestSuite rmcatLteTestSuite;

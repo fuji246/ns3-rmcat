@@ -60,6 +60,50 @@ for i in range(len(tableau20)):
     r, g, b = tableau20[i]
     colorlist.append((r / 255., g / 255., b / 255.))
 
+def plot_mobility(tc_name, contents, dirname):
+    mobility_log = contents['pos']
+    if len(mobility_log) == 0: return
+
+    node_pos = {}
+    for nodeid, pos_lst in mobility_log.iteritems():
+        ts_lst, x_lst, y_lst = node_pos.setdefault(nodeid, [[], [], []])
+        for pos_item in pos_lst:
+            ts_lst.append(pos_item[0])
+            x_lst.append(pos_item[1])
+            y_lst.append(pos_item[2])
+
+    fig = plt.figure()
+    l = len(colorlist)
+    color_idx = 0
+    for nodeid, ts_x_y_lst in node_pos.iteritems():
+        c = colorlist[color_idx % l]
+        plt.plot(ts_x_y_lst[1], ts_x_y_lst[2], color=c)
+        color_idx += 1
+
+    plt.ylabel('y (m)')
+    plt.xlabel('x (m)')
+    pngfile = '{}-mobility.png'.format(tc_name);
+    fig.savefig(os.path.join(dirname, pngfile))
+    plt.close(fig)
+
+    fig = plt.figure()
+    plt.subplot(211)
+    for nodeid, ts_x_y_lst in node_pos.iteritems():
+        plt.plot(ts_x_y_lst[0], ts_x_y_lst[1], color=colorlist[color_idx % l])
+        color_idx += 1
+    plt.xlabel('timestamp (second)')
+    plt.ylabel('x (m)')
+
+    plt.subplot(212)
+    for nodeid, ts_x_y_lst in node_pos.iteritems():
+        plt.plot(ts_x_y_lst[0], ts_x_y_lst[2], color=colorlist[color_idx % l])
+        color_idx += 1
+    plt.xlabel('timestamp (second)')
+    plt.ylabel('y (m)')
+
+    pngfile = '{}-mobility-timeseries.png'.format(tc_name);
+    fig.savefig(os.path.join(dirname, pngfile))
+    plt.close(fig)
 
 def plot_test_case(tc_name, contents, dirname):
     rmcat_log = contents['nada']
@@ -73,6 +117,7 @@ def plot_test_case(tc_name, contents, dirname):
     l = len(colorlist)
     pngfile = '{}.png'.format(tc_name);
     tmax = 120
+    rmax = 2.5
     fig = plt.figure()
     plt.subplot(311)
     for (i, obj) in enumerate(rmcat_keys):
@@ -81,6 +126,7 @@ def plot_test_case(tc_name, contents, dirname):
         ts = [x[0] for x in rmcat_log[obj]]
         rrate = [x[6]/1.e+6 for x in rmcat_log[obj]]
         srate = [x[7]/1.e+6 for x in rmcat_log[obj]]
+        rmax = max(max(rrate), max(srate))
         if nflow == 1:
             plt.plot(ts, rrate, 'd', linewidth=1.0, color=rcolor2, mfc=rcolor2, mec='none',
                                      ms=2, label=obj+'(recv)')
@@ -94,13 +140,16 @@ def plot_test_case(tc_name, contents, dirname):
         rcolor = colorlist[(i + 5) % l]
         ts = [x[0] for x in tcp_log[obj]]
         rrate = [x[2]/1.e+6 for x in tcp_log[obj]]
+        rmax = max(rmax, max(rrate))
         plt.plot(ts, rrate, '-o', linewidth=.7, color=rcolor, mfc=rcolor, mec='none',
                                   ms=2, label=obj)
         if max(ts)>150:
             tmax = 300
 
+    rmax *= 1.25
     plt.xlim(0, tmax)
-    plt.ylim(0, 2.5)
+    plt.ylim(0, rmax)
+    print("rmax = ", rmax)
     plt.ylabel('Rate (Mbps)')
     # plt.legend(loc='upper left', prop={'size':6}, bbox_to_anchor=(1,1), ncol=1)
     all_curves = len(rmcat_keys) + len(tcp_keys)
@@ -143,6 +192,7 @@ def plot_test_case(tc_name, contents, dirname):
     fig.savefig(os.path.join(dirname, pngfile))
     plt.close(fig)
 
+    plot_mobility(tc_name, contents, dirname)
 
 # ---------  #
 if len(sys.argv) != 2:

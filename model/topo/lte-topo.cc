@@ -35,12 +35,9 @@ static void CourseChange (std::string context, Ptr<const MobilityModel> mobility
 {
     Vector pos = mobility->GetPosition ();
     Vector vel = mobility->GetVelocity ();
-    NS_LOG_UNCOND(Simulator::Now () << " - " << context << ", model=" << mobility << ", POS: x=" << pos.x << ", y=" << pos.y
-              << ", z=" << pos.z << "; VEL: x=" << vel.x << ", y=" << vel.y
-              << ", z=" << vel.z);
-
-    //Vector position = mobility->GetPosition ();
-    //NS_LOG_UNCOND ("CourseChange: " << context << " x = " << position.x << ", y = " << position.y);
+    NS_LOG_INFO(context << ", model=" << mobility << ", POS: x=" << pos.x << ", y=" << pos.y
+                << ", z=" << pos.z << "; VEL: x=" << vel.x << ", y=" << vel.y
+                << ", z=" << vel.z);
 }
 
 Ptr<PointToPointEpcHelper> LteTop::epcHelper;
@@ -51,6 +48,8 @@ void LteTop::Build(uint16_t numberOfUEs, double speedKmPerHour, uint32_t msDelay
     // setup core network
     // PointToPoint links for the connection between the eNBs and the SGW (S1-U interface) and among eNBs (X2-U and X2-C interfaces)
     Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
+    lteHelper->SetAttribute ("PathlossModel", StringValue ("ns3::FriisPropagationLossModel"));
+
     epcHelper = CreateObject<PointToPointEpcHelper> ();
     lteHelper->SetEpcHelper (epcHelper);
 
@@ -83,12 +82,11 @@ void LteTop::Build(uint16_t numberOfUEs, double speedKmPerHour, uint32_t msDelay
     m_ueNodes.Create(numberOfUEs);
 
     // Install Mobility Model
-
     MobilityHelper mobility;
     ObjectFactory pos;
     pos.SetTypeId ("ns3::RandomRectanglePositionAllocator");
-    pos.Set ("X", StringValue ("ns3::UniformRandomVariable[Min=0.0|Max=400.0]"));
-    pos.Set ("Y", StringValue ("ns3::UniformRandomVariable[Min=0.0|Max=400.0]"));
+    pos.Set ("X", StringValue ("ns3::UniformRandomVariable[Min=1000.0|Max=3000.0]"));
+    pos.Set ("Y", StringValue ("ns3::UniformRandomVariable[Min=1000.0|Max=3000.0]"));
     Ptr<PositionAllocator> taPositionAlloc = pos.Create ()->GetObject<PositionAllocator> ();
 
     std::ostringstream speedVariableStream;
@@ -126,7 +124,13 @@ void LteTop::Build(uint16_t numberOfUEs, double speedKmPerHour, uint32_t msDelay
         lteHelper->Attach (m_ueDevices.Get(i), m_enbDevices.Get(0));
     }
 
+    Config::SetDefault ("ns3::LteRlcUm::MaxTxBufferSize", UintegerValue (1024 * 1024));
     Config::Connect ("/NodeList/*/$ns3::MobilityModel/CourseChange", MakeCallback (&CourseChange));
+
+    lteHelper->EnablePhyTraces ();
+    lteHelper->EnableMacTraces ();
+    lteHelper->EnableRlcTraces ();
+    lteHelper->EnablePdcpTraces ();
 }
 
 ApplicationContainer LteTop::InstallRMCAT (const std::string& flowId,

@@ -121,6 +121,40 @@ void RmcatLteTestCase::SetUpCBR (std::vector<Ptr<Application> >& cbrSend,
     }
 }
 
+/** Instantiate long lived TCP background flows */
+void RmcatLteTestCase::SetUpTCP (std::vector<Ptr<BulkSendApplication> >& tcpSend,
+                                 bool downstream, size_t numFlows)
+{
+    const uint32_t basePort = RMCAT_TC_LONG_TCP_PORT + (downstream ? 0: 1000);
+
+    std::stringstream ss0;
+    if (downstream) {
+        ss0 << "tcpDn_";
+    } else {
+        ss0 << "tcpUp_";
+    }
+
+    std::vector<Ptr<Application> > tcpRecv (numFlows);
+
+    for (uint32_t i = 0; i < numFlows; i++) {
+        std::stringstream ss;
+        ss << ss0.str () << i;
+
+        auto tcpApps = m_topo.InstallTCP (ss.str (),        // flow description
+                                          i,                // node ID
+                                          basePort + 2 * i, // server port
+                                          downstream);
+
+        //tcpSend[i] = DynamicCast<BulkSendApplication> (tcpApps.Get (0));
+        //tcpSend[i]->SetStartTime (Seconds (RMCAT_TC_BG_TSTART));
+        //tcpSend[i]->SetStopTime (Seconds (RMCAT_TC_BG_TFINIS));
+        //tcpRecv[i] = DynamicCast<Application> (tcpApps.Get (1));
+        //tcpRecv[i]->SetStartTime (Seconds (RMCAT_TC_BG_TSTART));
+        //tcpRecv[i]->SetStopTime (Seconds (RMCAT_TC_BG_TFINIS));
+    }
+}
+
+
 /**
  * Inherited DoSetup function:
  * -- Build network topology
@@ -132,7 +166,12 @@ void RmcatLteTestCase::DoSetup ()
 
     m_topo.Build (m_numberOfUEs, m_speed, m_delay);
 
-    ns3::LogComponentEnable ("RmcatSimTestLte", LOG_LEVEL_INFO);
+    // configure logging level
+    LogLevel l = (LogLevel)(LOG_LEVEL_INFO |
+                            LOG_PREFIX_TIME |
+                            LOG_PREFIX_NODE);
+    LogComponentEnable ("LteTopo", l);
+    LogComponentEnable ("RmcatSimTestLte", l);
 }
 
 /**
@@ -148,17 +187,23 @@ void RmcatLteTestCase::DoRun ()
     if (m_downstream) {
         //uint32_t downlinkCbrRateTotal = 2000000;
         //std::vector< Ptr<Application> > sendDnCBR (flowNum);
-        //setUpCBR (sendDnCBR, true, flowNum, downlinkCbrRateTotal/flowNum);
+        //SetUpCBR (sendDnCBR, true, flowNum, downlinkCbrRateTotal/flowNum);
 
-        std::vector< Ptr<RmcatSender> > sendDnRMCAT (flowNum);
-        SetUpRMCAT (sendDnRMCAT, true, flowNum);
+        //std::vector< Ptr<RmcatSender> > sendDnRMCAT (flowNum);
+        //SetUpRMCAT (sendDnRMCAT, true, flowNum);
+
+        std::vector<Ptr<BulkSendApplication> > tcpSend (flowNum);
+        SetUpTCP (tcpSend, true, flowNum);
     } else {
         //uint32_t uplinkCbrRateTotal = 2000000;
         //std::vector< Ptr<Application> > sendUpCBR (flowNum);
-        //setUpCBR (sendUpCBR, false, flowNum, uplinkCbrRateTotal/flowNum);
+        //SetUpCBR (sendUpCBR, false, flowNum, uplinkCbrRateTotal/flowNum);
 
-        std::vector< Ptr<RmcatSender> > sendUpRMCAT (flowNum);
-        SetUpRMCAT (sendUpRMCAT, false, flowNum);
+        //std::vector< Ptr<RmcatSender> > sendUpRMCAT (flowNum);
+        //SetUpRMCAT (sendUpRMCAT, false, flowNum);
+
+        std::vector<Ptr<BulkSendApplication> > tcpSend (flowNum);
+        SetUpTCP (tcpSend, false, flowNum);
     }
 
     /* Kick off simulation */
