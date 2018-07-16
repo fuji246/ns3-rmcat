@@ -41,12 +41,14 @@ static void CourseChange (std::string context, Ptr<const MobilityModel> mobility
 }
 
 Ptr<PointToPointEpcHelper> LteTop::epcHelper;
+Ptr<LteHelper> LteTop::lteHelper;
 
 void LteTop::Build(uint16_t numberOfUEs, double speedKmPerHour, uint32_t msDelay)
 {
     NS_LOG_INFO("LteTop::Build");
     // setup core network
     // PointToPoint links for the connection between the eNBs and the SGW (S1-U interface) and among eNBs (X2-U and X2-C interfaces)
+    lteHelper = CreateObject<LteHelper> ();
     Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
     lteHelper->SetAttribute ("PathlossModel", StringValue ("ns3::FriisPropagationLossModel"));
 

@@ -138,6 +138,7 @@ private:
     static void EnableLTELogComponents();
 
 protected:
+    static Ptr<LteHelper> lteHelper;
     static Ptr<ns3::PointToPointEpcHelper>  epcHelper;
     NodeContainer m_ueNodes;
     NodeContainer m_enbNodes;
